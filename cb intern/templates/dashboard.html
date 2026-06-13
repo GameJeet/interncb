@@ -1,0 +1,142 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_class %}page-dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Operations overview</p>
+        <h1>Security Dashboard</h1>
+        <p class="muted">Live metrics from this session&rsquo;s login activity, attack simulations, and defense triggers.</p>
+    </div>
+    <div class="page-header-status">
+        <span class="status-pill status-online">
+            <span class="pulse"></span> Lab online
+        </span>
+    </div>
+</div>
+
+<section class="stat-grid">
+    <div class="card glass stat-card">
+        <span class="stat-label">Total login attempts</span>
+        <span class="stat-value" id="stat-total" data-target="0">0</span>
+        <span class="stat-icon stat-icon-cyan">&#9881;</span>
+    </div>
+    <div class="card glass stat-card">
+        <span class="stat-label">Successful logins</span>
+        <span class="stat-value stat-green" id="stat-success" data-target="0">0</span>
+        <span class="stat-icon stat-icon-green">&#10003;</span>
+    </div>
+    <div class="card glass stat-card">
+        <span class="stat-label">Failed logins</span>
+        <span class="stat-value stat-red" id="stat-failed" data-target="0">0</span>
+        <span class="stat-icon stat-icon-red">&#10007;</span>
+    </div>
+    <div class="card glass stat-card">
+        <span class="stat-label">Accounts locked</span>
+        <span class="stat-value stat-amber" id="stat-locked" data-target="0">0</span>
+        <span class="stat-icon stat-icon-amber">&#128274;</span>
+    </div>
+    <div class="card glass stat-card">
+        <span class="stat-label">CAPTCHA triggers</span>
+        <span class="stat-value stat-cyan" id="stat-captcha" data-target="0">0</span>
+        <span class="stat-icon stat-icon-cyan">&#9881;</span>
+    </div>
+    <div class="card glass stat-card">
+        <span class="stat-label">Dictionary attacks run</span>
+        <span class="stat-value stat-cyan" id="stat-dict" data-target="0">0</span>
+        <span class="stat-icon stat-icon-cyan">&#128214;</span>
+    </div>
+    <div class="card glass stat-card">
+        <span class="stat-label">Brute-force runs</span>
+        <span class="stat-value stat-cyan" id="stat-brute" data-target="0">0</span>
+        <span class="stat-icon stat-icon-cyan">&#9889;</span>
+    </div>
+</section>
+
+<section class="card glass threat-card">
+    <div class="card-header">
+        <h3>Threat level</h3>
+        <p class="muted">A live assessment combining failed logins, CAPTCHA triggers, lockouts and simulated attacks from this session.</p>
+    </div>
+    <div class="threat-meter">
+        <div class="threat-track">
+            <div class="threat-segment seg-low" data-level="low"></div>
+            <div class="threat-segment seg-elevated" data-level="elevated"></div>
+            <div class="threat-segment seg-high" data-level="high"></div>
+            <div class="threat-segment seg-critical" data-level="critical"></div>
+            <div class="threat-marker" id="threat-marker"></div>
+        </div>
+        <div class="threat-labels">
+            <span>Low</span><span>Elevated</span><span>High</span><span>Critical</span>
+        </div>
+    </div>
+    <div class="threat-status">
+        <span class="badge threat-badge-low" id="threat-badge">Low</span>
+        <p class="muted" id="threat-desc">No suspicious activity detected yet.</p>
+    </div>
+</section>
+
+<section class="chart-grid">
+    <div class="card glass chart-card">
+        <div class="card-header">
+            <h3>Login outcomes</h3>
+            <p class="muted">Successful vs. failed login attempts this session.</p>
+        </div>
+        <canvas id="chart-outcomes" width="480" height="260" aria-label="Bar chart of successful versus failed logins"></canvas>
+        <div class="chart-legend">
+            <span><i class="legend-dot legend-green"></i> Successful</span>
+            <span><i class="legend-dot legend-red"></i> Failed</span>
+        </div>
+    </div>
+
+    <div class="card glass chart-card">
+        <div class="card-header">
+            <h3>Defense activity</h3>
+            <p class="muted">How often each defensive control has been triggered.</p>
+        </div>
+        <canvas id="chart-defense" width="480" height="260" aria-label="Donut chart of defense trigger counts"></canvas>
+        <div class="chart-legend" id="defense-legend"></div>
+    </div>
+</section>
+
+<section class="card glass info-card">
+    <div class="card-header">
+        <h3>How AuthLab Lite protects accounts</h3>
+    </div>
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="info-icon icon-cyan">1</span>
+            <div>
+                <h4>Password policy</h4>
+                <p class="muted">Login passwords are checked for length, casing, digits and special characters before they&rsquo;re accepted.</p>
+            </div>
+        </div>
+        <div class="info-item">
+            <span class="info-icon icon-cyan">2</span>
+            <div>
+                <h4>Rate limiting</h4>
+                <p class="muted">After 5 failed attempts in a session, login is paused for 30 seconds with a live countdown.</p>
+            </div>
+        </div>
+        <div class="info-item">
+            <span class="info-icon icon-cyan">3</span>
+            <div>
+                <h4>Account lockout</h4>
+                <p class="muted">Repeated failures on one account trigger a 2-minute lockout, independent of the session.</p>
+            </div>
+        </div>
+        <div class="info-item">
+            <span class="info-icon icon-cyan">4</span>
+            <div>
+                <h4>CAPTCHA challenge</h4>
+                <p class="muted">After 3 failed attempts, a generated CAPTCHA must be solved to continue.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

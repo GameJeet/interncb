@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AuthLab Lite{% endblock %} | AuthLab Lite</title>
+    <script>
+        // Apply saved light/dark theme before first paint to avoid a flash.
+        (function () {
+            try {
+                if (localStorage.getItem("authlab-theme") === "light") {
+                    document.documentElement.setAttribute("data-theme", "light");
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="scan-grid" aria-hidden="true"></div>
+
+    <button id="theme-toggle" class="btn btn-ghost btn-sm theme-toggle theme-toggle-floating" type="button" aria-label="Toggle light/dark theme" title="Toggle light/dark theme">
+        <span class="theme-icon-dark">&#9790;</span>
+        <span class="theme-icon-light">&#9728;</span>
+    </button>
+
+    {% if current_user %}
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a href="{{ url_for('dashboard') }}" class="brand">
+                <span class="brand-mark">A</span>
+                <span class="brand-text">
+                    <span class="brand-name">AuthLab <strong>Lite</strong></span>
+                    <span class="brand-sub">Authentication Security Testing Lab</span>
+                </span>
+            </a>
+
+            <nav class="topnav" aria-label="Primary navigation">
+                <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.path == url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('attacks_page') }}" class="{{ 'active' if request.path == url_for('attacks_page') }}">Attack Lab</a>
+                <a href="{{ url_for('logs_page') }}" class="{{ 'active' if request.path == url_for('logs_page') }}">Attack Logs</a>
+            </nav>
+
+            <div class="topbar-user">
+                <span class="user-chip">
+                    <span class="user-dot"></span>
+                    {{ current_user }}
+                </span>
+                <a href="{{ url_for('logout') }}" class="btn btn-ghost btn-sm">Log out</a>
+            </div>
+        </div>
+    </header>
+    {% endif %}
+
+    <main class="page {% block page_class %}{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <footer class="site-footer">
+        <p>AuthLab Lite &mdash; for educational use only. All attacks shown are simulations run against local demo accounts.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,140 @@
+{% extends "layout.html" %}
+{% block title %}Login{% endblock %}
+{% block page_class %}page-auth{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+
+    <section class="auth-hero">
+        <div class="hero-badge">SOC TRAINING ENVIRONMENT</div>
+        <h1 class="hero-title">
+            Auth<span class="accent-cyan">Lab</span> <span class="hero-lite">Lite</span>
+        </h1>
+        <p class="hero-subtitle">Authentication Security Testing Lab</p>
+        <p class="hero-tagline">
+            Learn how attackers compromise accounts &mdash; and how defenders stop them.
+        </p>
+
+        <ul class="hero-points">
+            <li><span class="dot dot-cyan"></span> Dictionary &amp; brute-force attack simulators</li>
+            <li><span class="dot dot-green"></span> Rate limiting, lockouts &amp; CAPTCHA defenses</li>
+            <li><span class="dot dot-red"></span> Live attack logs &amp; SOC-style dashboard</li>
+        </ul>
+
+        <div class="hero-radar" aria-hidden="true">
+            <div class="radar-ring r1"></div>
+            <div class="radar-ring r2"></div>
+            <div class="radar-ring r3"></div>
+            <div class="radar-sweep"></div>
+            <div class="radar-core"></div>
+        </div>
+    </section>
+
+    <section class="auth-card-wrap">
+        <div class="card glass auth-card">
+            <div class="card-header">
+                <h2>Sign in</h2>
+                <p class="muted">Use one of the demo accounts below to access the lab.</p>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-error" role="alert">
+                <span class="alert-icon">&#9888;</span>
+                <span>{{ error }}</span>
+            </div>
+            {% endif %}
+
+            {% if rate_limited %}
+            <div class="alert alert-warning" role="alert" id="rate-limit-alert" data-remaining="{{ rate_remaining }}">
+                <span class="alert-icon">&#9203;</span>
+                <span>Too many attempts. Please wait <strong id="rate-countdown">{{ rate_remaining }}</strong> seconds before trying again.</span>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('login') }}" id="login-form" autocomplete="off">
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="admin / student / intern" required {{ 'disabled' if rate_limited else '' }}>
+                </div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+                    <div class="password-wrap">
+                        <input type="password" id="password" name="password" placeholder="Enter password" required {{ 'disabled' if rate_limited else '' }}>
+                        <button type="button" class="toggle-pass" id="toggle-password" aria-label="Show password" {{ 'disabled' if rate_limited else '' }}>
+                            <svg class="icon-eye" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="icon-eye-off" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" hidden><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.6 18.6 0 0 1 4.22-5.06M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <label class="checkbox">
+                        <input type="checkbox" id="remember" name="remember">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="link-muted" id="forgot-link">Forgot password?</a>
+                </div>
+
+                {% if show_captcha %}
+                <div class="field captcha-field">
+                    <label for="captcha">Security check</label>
+                    <div class="captcha-row">
+                        <canvas id="captcha-canvas" width="160" height="56" data-captcha="{{ captcha_text }}" aria-label="CAPTCHA image"></canvas>
+                        <button type="button" class="btn btn-ghost btn-sm" id="refresh-captcha">&#x21bb; Refresh</button>
+                    </div>
+                    <input type="text" id="captcha" name="captcha" placeholder="Enter the code above" autocomplete="off" required maxlength="5" {{ 'disabled' if rate_limited else '' }}>
+                    <p class="hint">CAPTCHA required after multiple failed login attempts.</p>
+                </div>
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary btn-block" id="login-btn" {{ 'disabled' if rate_limited else '' }}>
+                    <span>Sign in</span>
+                </button>
+            </form>
+
+            <div id="forgot-message" class="alert alert-info" hidden>
+                <span class="alert-icon">&#8505;</span>
+                <span>Password reset is simulated in this lab. In a real system, a reset link would be emailed to the account owner.</span>
+            </div>
+
+            <div class="demo-accounts">
+                <p class="muted small">Demo accounts</p>
+                <div class="demo-chip-row">
+                    <code>admin / Admin@123</code>
+                    <code>student / Student@123</code>
+                    <code>intern / Intern@123</code>
+                </div>
+            </div>
+        </div>
+
+        <div class="card glass policy-card">
+            <div class="card-header">
+                <h3>Password Policy Checker</h3>
+                <p class="muted">Try a password to see how AuthLab Lite scores it in real time.</p>
+            </div>
+            <div class="field">
+                <label for="policy-password">Test password</label>
+                <input type="text" id="policy-password" placeholder="Type a password to check its strength" autocomplete="off">
+            </div>
+
+            <div class="strength-meter">
+                <div class="strength-bar" id="strength-bar"></div>
+            </div>
+            <p class="strength-label" id="strength-label">Strength: &mdash;</p>
+
+            <ul class="policy-checklist" id="policy-checklist">
+                <li data-rule="length"><span class="rule-icon">&#10007;</span> At least 8 characters</li>
+                <li data-rule="upper"><span class="rule-icon">&#10007;</span> At least 1 uppercase letter</li>
+                <li data-rule="lower"><span class="rule-icon">&#10007;</span> At least 1 lowercase letter</li>
+                <li data-rule="digit"><span class="rule-icon">&#10007;</span> At least 1 digit</li>
+                <li data-rule="special"><span class="rule-icon">&#10007;</span> At least 1 special character</li>
+            </ul>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

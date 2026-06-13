@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% block title %}Attack Logs{% endblock %}
+{% block page_class %}page-logs{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Security event monitoring</p>
+        <h1>Attack Logs</h1>
+        <p class="muted">Every login attempt, defense trigger and simulated attack is recorded here in memory.</p>
+    </div>
+</div>
+
+<section class="card glass logs-toolbar">
+    <div class="field">
+        <label for="log-search">Search</label>
+        <input type="text" id="log-search" placeholder="Search by username, event or result&hellip;">
+    </div>
+    <div class="field">
+        <label for="log-filter">Filter by event type</label>
+        <select id="log-filter">
+            <option value="">All events</option>
+            {% for e in event_types %}
+            <option value="{{ e }}">{{ e }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field field-buttons">
+        <button class="btn btn-ghost" id="refresh-logs">&#x21bb; Refresh</button>
+        <a class="btn btn-ghost" id="export-logs" href="/api/logs/export" download="authlab_logs.csv">&#11015; Export CSV</a>
+        <button class="btn btn-danger" id="clear-logs">Clear logs</button>
+    </div>
+</section>
+
+<section class="card glass">
+    <div class="table-wrap">
+        <table class="logs-table" id="logs-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Username</th>
+                    <th>Event</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody id="logs-body">
+                <tr class="empty-row"><td colspan="4" class="muted">Loading logs&hellip;</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="muted small" id="logs-count"></p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/logs.js') }}"></script>
+{% endblock %}

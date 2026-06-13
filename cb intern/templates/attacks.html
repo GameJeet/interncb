@@ -1,0 +1,174 @@
+{% extends "layout.html" %}
+{% block title %}Attack Lab{% endblock %}
+{% block page_class %}page-attacks{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <p class="eyebrow">Simulated offensive exercises</p>
+        <h1>Attack Lab</h1>
+        <p class="muted">Switch perspectives to see how an attacker probes a login system &mdash; and how AuthLab Lite&rsquo;s defenses respond.</p>
+    </div>
+</div>
+
+<div class="mode-toggle" role="tablist" aria-label="Lab mode">
+    <button class="mode-btn active" data-mode="attacker" role="tab" aria-selected="true">
+        <span class="mode-icon">&#9888;</span> Attacker Mode
+    </button>
+    <button class="mode-btn" data-mode="defender" role="tab" aria-selected="false">
+        <span class="mode-icon">&#128737;</span> Defender Mode
+    </button>
+</div>
+
+<div class="alert alert-info disclaimer">
+    <span class="alert-icon">&#8505;</span>
+    <span>This attack is simulated for educational purposes only. All attempts run against local demo accounts only and are recorded in the Attack Logs.</span>
+</div>
+
+<!-- ===================== ATTACKER MODE ===================== -->
+<div class="mode-panel" id="panel-attacker">
+
+    <section class="card glass attack-card">
+        <div class="card-header">
+            <h3><span class="badge badge-cyan">01</span> Dictionary Attack Simulator</h3>
+            <p class="muted">Test a target account against a fixed list of commonly used passwords.</p>
+        </div>
+
+        <div class="attack-controls">
+            <div class="field">
+                <label for="dict-target">Target account</label>
+                <select id="dict-target">
+                    {% for u in demo_users %}
+                    <option value="{{ u }}">{{ u }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="btn btn-attack" id="dict-start">Launch dictionary attack</button>
+        </div>
+
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="dict-progress"></div></div>
+            <span class="progress-label" id="dict-progress-label">Idle</span>
+        </div>
+
+        <div class="terminal" id="dict-terminal">
+            <div class="terminal-header">
+                <span class="terminal-dot dot-red"></span>
+                <span class="terminal-dot dot-amber"></span>
+                <span class="terminal-dot dot-green"></span>
+                <span class="terminal-title">dictionary_attack.py</span>
+            </div>
+            <div class="terminal-body" id="dict-output">
+                <p class="term-line muted">&gt; Select a target and click &ldquo;Launch dictionary attack&rdquo; to begin.</p>
+            </div>
+        </div>
+
+        <details class="wordlist-details">
+            <summary>View internal wordlist ({{ wordlist|length }} entries)</summary>
+            <div class="wordlist-grid">
+                {% for w in wordlist %}
+                <code>{{ w }}</code>
+                {% endfor %}
+            </div>
+        </details>
+    </section>
+
+    <section class="card glass attack-card">
+        <div class="card-header">
+            <h3><span class="badge badge-red">02</span> Brute Force Demonstration</h3>
+            <p class="muted">Simulate a brute-force attempt that cycles through a candidate password list.</p>
+        </div>
+
+        <div class="attack-controls">
+            <div class="field">
+                <label for="brute-target">Target account</label>
+                <select id="brute-target">
+                    {% for u in demo_users %}
+                    <option value="{{ u }}">{{ u }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button class="btn btn-attack" id="brute-start">Start simulation</button>
+            <button class="btn btn-ghost" id="brute-stop" disabled>Stop simulation</button>
+        </div>
+
+        <div class="brute-stats">
+            <div class="brute-stat">
+                <span class="muted small">Current attempt</span>
+                <span class="mono" id="brute-current">&mdash;</span>
+            </div>
+            <div class="brute-stat">
+                <span class="muted small">Attempts made</span>
+                <span class="mono" id="brute-count">0</span>
+            </div>
+            <div class="brute-stat">
+                <span class="muted small">Status</span>
+                <span class="mono" id="brute-status">Idle</span>
+            </div>
+        </div>
+
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill progress-fill-red" id="brute-progress"></div></div>
+        </div>
+
+        <div class="terminal" id="brute-terminal">
+            <div class="terminal-header">
+                <span class="terminal-dot dot-red"></span>
+                <span class="terminal-dot dot-amber"></span>
+                <span class="terminal-dot dot-green"></span>
+                <span class="terminal-title">brute_force.py</span>
+            </div>
+            <div class="terminal-body" id="brute-output">
+                <p class="term-line muted">&gt; Select a target and click &ldquo;Start simulation&rdquo; to begin.</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ===================== DEFENDER MODE ===================== -->
+<div class="mode-panel" id="panel-defender" hidden>
+    <section class="card glass">
+        <div class="card-header">
+            <h3><span class="badge badge-green">&#128737;</span> Active defenses</h3>
+            <p class="muted">These controls are live on the <a href="{{ url_for('login') }}">login page</a> right now &mdash; try triggering them yourself.</p>
+        </div>
+
+        <div class="defense-grid">
+            <div class="defense-item">
+                <h4>Rate limiting</h4>
+                <p class="muted">5 failed attempts in a session triggers a 30-second cooldown with a live countdown timer.</p>
+            </div>
+            <div class="defense-item">
+                <h4>Account lockout</h4>
+                <p class="muted">5 consecutive failures on one account locks it for 2 minutes, regardless of session.</p>
+            </div>
+            <div class="defense-item">
+                <h4>CAPTCHA challenge</h4>
+                <p class="muted">After 3 failed attempts, a 5-character CAPTCHA is generated and must be solved.</p>
+            </div>
+            <div class="defense-item">
+                <h4>Password policy</h4>
+                <p class="muted">The policy checker on the login page enforces length, casing, digit and symbol rules.</p>
+            </div>
+        </div>
+
+        <a href="{{ url_for('login') }}" class="btn btn-primary" target="_blank" rel="noopener">Open login page to test defenses &rarr;</a>
+    </section>
+
+    <section class="card glass">
+        <div class="card-header">
+            <h3>Why these attacks fail against good defenses</h3>
+        </div>
+        <ul class="defense-list">
+            <li><strong>Dictionary attacks</strong> rely on weak, predictable passwords. A strong password policy removes most of the wordlist&rsquo;s matches.</li>
+            <li><strong>Brute-force attacks</strong> need many attempts. Rate limiting and account lockouts make this slow and noisy.</li>
+            <li><strong>Automated scripts</strong> struggle with CAPTCHA challenges, which require human-style input.</li>
+            <li><strong>Every attempt is logged</strong>, giving defenders visibility into ongoing attacks via the Attack Logs page.</li>
+        </ul>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/attacks.js') }}"></script>
+{% endblock %}
